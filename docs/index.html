@@ -45,7 +45,12 @@
     line-height: 1.62;
     -webkit-font-smoothing: antialiased;
   }
-  img { max-width: 100%; display: block; }
+  /* `height: auto` is not optional next to the width/height attributes those
+     images carry. Without it the attribute height wins over the CSS width and
+     the picture renders stretched -- the hero came out at 432 by 304 instead of
+     432 by 153. The attributes stay because they reserve the right space while
+     the image is still loading. */
+  img { max-width: 100%; height: auto; display: block; }
   a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
   a:hover { text-decoration-color: var(--cyan); }
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 3px; }
