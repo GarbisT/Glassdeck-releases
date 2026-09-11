@@ -1,7 +1,7 @@
 {
-  "version": "1.0.2",
-  "build": "6",
+  "version": "1.0.3",
+  "build": "7",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "Update notices are now reachable from the widget, stay until installed, and Check Now answers.",
+  "notes": "Installer only: the disk image window now says to drag to Applications, and not to open it in place.",
   "minimumSystemVersion": "14.0"
 }
