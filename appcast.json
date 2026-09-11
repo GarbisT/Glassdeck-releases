@@ -1,7 +1,7 @@
 {
-  "version": "1.1.0",
-  "build": "8",
+  "version": "1.2.0",
+  "build": "9",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "The full panel now shows album art and the spectrum at once, and shuffle and repeat stay in step with your player.",
+  "notes": "A record instead of the album art, six scrubber handles, an in-app bug report, and a browser that refuses now says so.",
   "minimumSystemVersion": "14.0"
 }
