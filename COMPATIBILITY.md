@@ -141,9 +141,33 @@ Safari Settings ▸ Developer ▸ Allow JavaScript from Apple Events
 lets it ask an app what is playing, once per app. **System Audio Recording** is
 only for the visualiser — decline it and the bars fall back to an animation.
 
+On the wide layout the spectrum does not cost you the album art: it runs as a
+band behind the title and along the progress bar, and a button beside the
+settings one switches it on and cycles the six styles. Compact and Vinyl still
+trade one for the other, because they have nowhere else to put it. The wide
+layout can also show a turning record in place of the cover.
+
 The first time GlassDeck speaks to a new app, macOS holds the request until you
 answer the prompt. If it seems to hang for a minute, the dialog is waiting for
 you somewhere.
+
+### If a browser will not play along
+
+Three different things make a browser refuse to be read, and they look
+identical from the outside — GlassDeck will tell you it was refused but cannot
+tell you which:
+
+1. **The switch is off.** The paths are above.
+2. **The browser is on its profile picker.** Until you choose a profile, the
+   Developer menu is greyed out and the browser refuses. Choosing one is enough.
+3. **The music is playing in an "installed" web app.** A site added with the
+   browser's own Install button gets its own icon and window, and that window
+   refuses to be read no matter what the switch says. It is not an application
+   and not an ordinary tab, so nothing can see it. Its own menu offers to open
+   it in the browser; do that, or install the service's real application.
+
+The third is the one nobody works out alone. If your player looks like an app
+but has a three-dot menu offering "Open in Chrome", that is what you have.
 
 ### If Accessibility looks on but nothing works
 
@@ -228,4 +252,4 @@ widget has not yet been pointed at them end to end.
 GlassDeck has so far only been run on Apple silicon. Anything not listed has not
 been tested.
 
-_Last updated: 11 September 2026._
+_Last updated: 12 September 2026._

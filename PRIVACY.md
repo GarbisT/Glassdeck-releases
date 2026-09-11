@@ -14,8 +14,9 @@ GlassDeck saves your preferences in the standard macOS preferences store, under
 `io.github.garbist.glassdeck`. That is the complete list of what it keeps:
 
 - how the widget looks: shape, glass style, material, frost, tint, translucency,
-  contrast scrim, corner radius, sheen, grain, control style, visualizer style
-  and the artwork slot
+  contrast scrim, corner radius, sheen, grain, control style, visualizer style,
+  the artwork slot, whether the wide panel shows a cover or a record, and which
+  scrubber handle you chose
 - where you left the widget on screen, and whether it floats above other windows
   or shows on all Spaces
 - the browser debugging port, if you changed it
@@ -98,4 +99,4 @@ the app.
 Open an issue at
 <https://github.com/GarbisT/Glassdeck-releases/issues>.
 
-_Last updated: 11 September 2026._
+_Last updated: 12 September 2026._
