@@ -8,6 +8,19 @@ so that the installer and the version manifest have a public home.
 
 Get the latest build from the [Releases page](https://github.com/GarbisT/Glassdeck-releases/releases/latest).
 
+GlassDeck needs macOS 14 or later and runs on Apple silicon and Intel Macs.
+
+- **[Privacy](PRIVACY.md)** — everything it reads, everywhere it connects, and
+  the fact that none of it reaches the developer. No account, no analytics, no
+  telemetry.
+- **[Licence](LICENSE.md)** — the terms the app is distributed under. It is
+  proprietary: yours to use, not yours to redistribute.
+
+The app links to both of these from its setup guide and from the About submenu
+in the menu bar, so the copies here are the ones people actually read. They are
+mirrors of the versions in the application's own repository; change them there
+first.
+
 ## For the app
 
 `appcast.json` is what a running copy of GlassDeck reads to find out whether a
