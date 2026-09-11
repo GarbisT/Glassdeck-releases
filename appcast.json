@@ -1,7 +1,7 @@
 {
-  "version": "1.0.1",
-  "build": "5",
+  "version": "1.0.2",
+  "build": "6",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "Opening GlassDeck again now brings the widget back.",
+  "notes": "Update notices are now reachable from the widget, stay until installed, and Check Now answers.",
   "minimumSystemVersion": "14.0"
 }
