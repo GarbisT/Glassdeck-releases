@@ -8,7 +8,7 @@
 <link rel="icon" href="icon.png">
 <meta property="og:title" content="GlassDeck">
 <meta property="og:description" content="A floating glass now-playing widget for macOS.">
-<meta property="og:image" content="shots/full-dark-artwork.jpg">
+<meta property="og:image" content="shots/full-dark-artwork.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -117,7 +117,6 @@
   }
   .stage img {
     position: relative; z-index: 1; width: 100%; max-width: 856px; margin: 0 auto;
-    border-radius: 18px;
     box-shadow: 0 30px 80px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.05);
   }
 
@@ -143,25 +142,28 @@
   .switch button[aria-pressed="true"] { background: var(--raised); color: var(--ink); }
   .switch button:hover { color: var(--ink); }
 
-  .shapes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  /* The grid follows the shapes. A 428-wide panel and a 34-tall bar have no
+     business in the same column as a square: forcing all four into equal cells
+     left each picture stranded in a large empty card. The wide ones take the
+     full row, the two squares share one. */
+  .shapes { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .shape.wide { grid-column: 1 / -1; }
   .shape {
     background: var(--raised); border: 1px solid var(--line-2); border-radius: 14px;
-    padding: 18px; margin: 0; display: flex; flex-direction: column; gap: 14px;
+    padding: 16px; margin: 0; display: flex; flex-direction: column; gap: 13px;
   }
-  /* One height for every well, so the four cards line up instead of each
-     stretching to its own picture. */
+  /* No fixed height. The well is as tall as the picture plus a little air, so
+     the card never opens up around a small widget. */
   .shot {
-    background: var(--sunken); border-radius: 9px; overflow: hidden;
+    background: var(--sunken); border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    height: 300px; padding: 16px;
+    padding: 18px; flex: 1;
   }
   /* Shown at true size rather than stretched to the card. The shapes really are
      different sizes on screen, and scaling them all to one width both softens
-     the small ones and tells a lie about how much room they take. */
-  .shot img {
-    border-radius: 6px; width: auto; height: auto;
-    max-width: 100%; max-height: 100%;
-  }
+     the small ones and tells a lie about how much room they take. The rounded
+     corners are cut into the files themselves, so they hold at any scale. */
+  .shot img { width: auto; height: auto; max-width: 100%; }
   .shape figcaption { display: flex; flex-direction: column; gap: 3px; }
   .shape-name { font-size: 15.5px; font-weight: 600; }
   .shape p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
@@ -236,7 +238,7 @@
   </header>
 
   <div class="hero">
-    <p class="eyebrow">macOS · free · universal</p>
+    <p class="eyebrow">Mac OS · free · universal</p>
     <h1>Whatever's playing, always in view.</h1>
     <p class="lede">A floating pane of glass that shows what you're listening to and lets you
       drive it, without switching apps or hunting for the right window. It reads your music
@@ -249,7 +251,7 @@
       <span class="meta"><b>Version 1.0.3</b> · Apple silicon and Intel · macOS 14 or later · 3.8 MB</span>
     </div>
     <div class="stage">
-      <img src="shots/full-dark-artwork.jpg" width="856" height="304"
+      <img src="shots/full-dark-artwork.png" width="856" height="304"
            alt="The GlassDeck widget floating over a desktop, showing album artwork, track title, artist, a progress bar and playback controls.">
     </div>
   </div>
@@ -271,29 +273,29 @@
     </div>
 
     <div class="shapes">
-      <figure class="shape">
-        <div class="shot"><img data-shape="full" style="width:428px" width="428" height="152" src="shots/full-dark-artwork.jpg" alt="GlassDeck, full layout" loading="lazy"></div>
+      <figure class="shape wide">
+        <div class="shot"><img data-shape="full" style="width:428px" width="428" height="152" src="shots/full-dark-artwork.png" alt="GlassDeck, full layout" loading="lazy"></div>
         <figcaption>
           <span class="shape-name">Full</span>
           <p>Artwork, title, artist, a scrubber you can drag, and every control at once.</p>
         </figcaption>
       </figure>
       <figure class="shape">
-        <div class="shot"><img data-shape="compact" style="width:200px" width="200" height="200" src="shots/compact-dark-artwork.jpg" alt="GlassDeck, compact layout" loading="lazy"></div>
+        <div class="shot"><img data-shape="compact" style="width:200px" width="200" height="200" src="shots/compact-dark-artwork.png" alt="GlassDeck, compact layout" loading="lazy"></div>
         <figcaption>
           <span class="shape-name">Compact</span>
           <p>A square that fades the artwork in diagonally and keeps the controls in its corners.</p>
         </figcaption>
       </figure>
       <figure class="shape">
-        <div class="shot"><img data-shape="vinyl" style="width:240px" width="240" height="240" src="shots/vinyl-dark-artwork.jpg" alt="GlassDeck, vinyl layout" loading="lazy"></div>
+        <div class="shot"><img data-shape="vinyl" style="width:240px" width="240" height="240" src="shots/vinyl-dark-artwork.png" alt="GlassDeck, vinyl layout" loading="lazy"></div>
         <figcaption>
           <span class="shape-name">Vinyl</span>
           <p>The same square, with the cover turning on a record under a tonearm.</p>
         </figcaption>
       </figure>
-      <figure class="shape">
-        <div class="shot"><img data-shape="slim" style="width:432px" width="432" height="34" src="shots/slim-dark-artwork.jpg" alt="GlassDeck, slim bar layout" loading="lazy"></div>
+      <figure class="shape wide">
+        <div class="shot"><img data-shape="slim" style="width:432px" width="432" height="34" src="shots/slim-dark-artwork.png" alt="GlassDeck, slim bar layout" loading="lazy"></div>
         <figcaption>
           <span class="shape-name">Slim</span>
           <p>One line, as wide as you want it. The spectrum draws behind the words.</p>
@@ -457,9 +459,9 @@
 
   function apply() {
     shots.forEach(function (img) {
-      img.src = "shots/" + img.dataset.shape + "-" + state.theme + "-" + state.mode + ".jpg";
+      img.src = "shots/" + img.dataset.shape + "-" + state.theme + "-" + state.mode + ".png";
     });
-    hero.src = "shots/full-" + state.theme + "-" + state.mode + ".jpg";
+    hero.src = "shots/full-" + state.theme + "-" + state.mode + ".png";
   }
 
   document.querySelectorAll(".switch button").forEach(function (btn) {
