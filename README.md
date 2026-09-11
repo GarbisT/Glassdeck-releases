@@ -10,6 +10,9 @@ Get the latest build from the [Releases page](https://github.com/GarbisT/Glassde
 
 GlassDeck needs macOS 14 or later and runs on Apple silicon and Intel Macs.
 
+- **[What works where](COMPATIBILITY.md)** — every player, browser and service,
+  what each one gives you, and the one switch most browsers need. Read this
+  before deciding GlassDeck cannot see your music.
 - **[Privacy](PRIVACY.md)** — everything it reads, everywhere it connects, and
   the fact that none of it reaches the developer. No account, no analytics, no
   telemetry.
