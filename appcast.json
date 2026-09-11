@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "build": "1",
+  "version": "1.0.0",
+  "build": "4",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
   "notes": "First public release.",
   "minimumSystemVersion": "14.0"
