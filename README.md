@@ -6,7 +6,11 @@ so that the installer and the version manifest have a public home.
 
 ## For people
 
-Get the latest build from the [Releases page](https://github.com/GarbisT/Glassdeck-releases/releases/latest).
+**[glassdeck on the web](https://garbist.github.io/Glassdeck-releases/)** — screenshots, what it
+does, and a download button. This is the page to send people.
+
+Or get the latest build straight from the
+[Releases page](https://github.com/GarbisT/Glassdeck-releases/releases/latest).
 
 GlassDeck needs macOS 14 or later and runs on Apple silicon and Intel Macs.
 
