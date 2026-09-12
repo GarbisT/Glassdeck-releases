@@ -1,552 +1,149 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GlassDeck</title>
-<meta name="description" content="A floating glass now-playing widget for macOS. It shows whatever you are already playing, and lets you drive it without switching apps.">
-<link rel="icon" href="icon.png">
-<meta property="og:title" content="GlassDeck">
-<meta property="og:description" content="A floating glass now-playing widget for macOS.">
-<meta property="og:image" content="shots/full-dark-artwork.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-  :root {
-    --ground:  #0b0c11;
-    --raised:  #14161e;
-    --sunken:  #080910;
-    --ink:     #f4f5fa;
-    --ink-2:   #a7acc0;
-    --muted:   #6e7386;
-    --line:    #22252f;
-    --line-2:  #191c24;
-    --magenta: #ff2e94;
-    --violet:  #a64dff;
-    --cyan:    #21e6ff;
-    --ramp: linear-gradient(90deg, var(--magenta), var(--violet), var(--cyan));
-    --measure: 62ch;
-  }
-
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0;
-    /* Clip rather than hidden: `clip` does not turn the body into a scroll
-       container, so anchor links and position:sticky keep working. A safety
-       net, not the fix -- nothing should reach past the edge in the first
-       place. */
-    overflow-x: clip;
-    background: var(--ground);
-    color: var(--ink);
-    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-    font-size: 16px;
-    line-height: 1.62;
-    -webkit-font-smoothing: antialiased;
-  }
-  /* `height: auto` is not optional next to the width/height attributes those
-     images carry. Without it the attribute height wins over the CSS width and
-     the picture renders stretched -- the hero came out at 432 by 304 instead of
-     432 by 153. The attributes stay because they reserve the right space while
-     the image is still loading. */
-  img { max-width: 100%; height: auto; display: block; }
-  a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
-  a:hover { text-decoration-color: var(--cyan); }
-  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 3px; }
-
-  h1, h2, h3, .eyebrow, .wordmark, .shape-name {
-    font-family: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
-  }
-  .mono, code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
-
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-
-  /* ---------- top bar ---------- */
-  .top {
-    display: flex; align-items: center; gap: 12px;
-    padding: 22px 0 0;
-  }
-  .top img { width: 30px; height: 30px; border-radius: 7px; }
-  .wordmark { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
-  .top .spacer { flex: 1; }
-  .top-link {
-    font-size: 13.5px; color: var(--ink-2); text-decoration: none;
-    padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px;
-  }
-  .top-link:hover { color: var(--ink); border-color: var(--muted); }
-
-  /* ---------- hero ---------- */
-  .hero { padding: 68px 0 24px; display: flex; flex-direction: column; gap: 22px; }
-  .eyebrow {
-    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
-    font-weight: 600; margin: 0;
-    background: var(--ramp); -webkit-background-clip: text; background-clip: text;
-    color: transparent;
-  }
-  h1 {
-    margin: 0; font-weight: 700;
-    font-size: clamp(38px, 6.4vw, 66px); line-height: 1.02;
-    letter-spacing: -.035em; text-wrap: balance; max-width: 16ch;
-  }
-  .lede { margin: 0; font-size: clamp(17px, 2.2vw, 20px); color: var(--ink-2); max-width: var(--measure); }
-
-  .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 6px; }
-  .button {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-family: "Schibsted Grotesk", sans-serif; font-size: 15.5px; font-weight: 600;
-    color: #0a0b10; text-decoration: none;
-    padding: 13px 22px; border-radius: 999px;
-    background: var(--ramp);
-    box-shadow: 0 8px 30px -12px rgba(166, 77, 255, .85);
-  }
-  .button:hover { filter: brightness(1.08); }
-  .button svg { width: 16px; height: 16px; }
-  .meta { font-size: 13px; color: var(--muted); line-height: 1.5; }
-  .meta b { color: var(--ink-2); font-weight: 500; }
-
-  /* ---------- hero image ---------- */
-  .stage { position: relative; margin: 30px 0 0; }
-  .stage::before {
-    /* Pinned to the container's own width. Reaching past it sideways added to
-       the page's scrollable width and gave the whole document a horizontal
-       scrollbar; the gradient fades out well before the edge anyway. */
-    content: ""; position: absolute; inset: -14% 0 -22%;
-    background: radial-gradient(60% 60% at 50% 45%, rgba(166,77,255,.30), transparent 70%);
-    filter: blur(22px); z-index: 0;
-  }
-  .stage img {
-    position: relative; z-index: 1; width: 100%; max-width: 856px; margin: 0 auto;
-    box-shadow: 0 30px 80px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.05);
-  }
-
-  /* ---------- sections ---------- */
-  section { padding: 84px 0 0; }
-  h2 {
-    margin: 0 0 10px; font-size: clamp(25px, 3.2vw, 34px);
-    font-weight: 600; letter-spacing: -.025em; text-wrap: balance;
-  }
-  .sub { margin: 0 0 30px; color: var(--ink-2); max-width: var(--measure); }
-
-  /* ---------- gallery ---------- */
-  .switches { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 26px; }
-  .switch {
-    display: inline-flex; padding: 3px; gap: 3px;
-    background: var(--sunken); border: 1px solid var(--line); border-radius: 999px;
-  }
-  .switch button {
-    font: 500 13px/1 "IBM Plex Sans", sans-serif;
-    color: var(--ink-2); background: transparent; border: 0; cursor: pointer;
-    padding: 8px 15px; border-radius: 999px;
-  }
-  .switch button[aria-pressed="true"] { background: var(--raised); color: var(--ink); }
-  .switch button:hover { color: var(--ink); }
-
-  /* Scattered, not gridded.
-     
-     These are pictures of a widget that floats on a desktop, and a tidy row of
-     equal cells is the one arrangement that contradicts what the product is.
-     Each one is absolutely placed at its own offset, tilted a degree or two,
-     and carries a drop shadow that follows its cut corners rather than a box.
-     Below 900px the whole thing falls back to ordinary flow, because scattering
-     needs room and a phone has none. */
-  .scatter { position: relative; min-height: 940px; margin-top: 8px; }
-  .float { position: absolute; margin: 0; }
-  .float img {
-    width: 100%; height: auto;
-    filter: drop-shadow(0 24px 45px rgba(0,0,0,.62)) drop-shadow(0 3px 9px rgba(0,0,0,.4));
-  }
-  .float figcaption { margin-top: 14px; max-width: 30ch; }
-  .shape-name { font-size: 15.5px; font-weight: 600; display: block; }
-  .float p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-
-  .f-full    { left: 0;     top: 0;     width: 428px; transform: rotate(-1.4deg); }
-  .f-compact { right: 2%;   top: 232px; width: 200px; transform: rotate(1.8deg); }
-  .f-vinyl   { left: 9%;    top: 455px; width: 240px; transform: rotate(-1deg); }
-  .f-slim    { right: 0;    top: 742px; width: 432px; transform: rotate(.9deg); }
-
-  /* ---------- presets ---------- */
-  .presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: start; }
-  .preset { margin: 0; }
-  .preset img {
-    width: 100%; height: auto; border-radius: 0;
-    filter: drop-shadow(0 18px 34px rgba(0,0,0,.55));
-  }
-  .preset:nth-child(even) { margin-top: 34px; }
-  .preset figcaption { margin-top: 13px; }
-  .preset .shape-name { font-size: 14.5px; }
-  .preset p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-  .tunables { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 34px; }
-  .tunable {
-    font-size: 13px; color: var(--ink-2); background: var(--raised);
-    border: 1px solid var(--line-2); border-radius: 7px; padding: 7px 12px;
-  }
-
-  /* ---------- features ---------- */
-  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-2);
-              border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
-  .feature { background: var(--ground); padding: 24px 22px; display: flex; flex-direction: column; gap: 7px; }
-  .feature h3 { margin: 0; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; }
-  .feature p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
-  .feature .dot { width: 18px; height: 3px; border-radius: 2px; background: var(--ramp); margin-bottom: 4px; }
-
-  /* ---------- sources ---------- */
-  .sources { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .panel { background: var(--raised); border: 1px solid var(--line-2); border-radius: 14px; padding: 22px 24px; }
-  .panel h3 { margin: 0 0 12px; font-size: 14px; font-weight: 600; letter-spacing: .02em; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-  .chip {
-    font: 500 12.5px/1 "IBM Plex Mono", monospace; color: var(--ink-2);
-    background: var(--sunken); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
-  }
-  .chip.no { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--magenta); }
-  .panel .note { margin: 14px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-  /* ---------- steps ---------- */
-  .steps { display: flex; flex-direction: column; gap: 1px; background: var(--line-2);
-           border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
-  .step { background: var(--ground); padding: 22px 24px; display: grid;
-          grid-template-columns: 34px 1fr; gap: 18px; align-items: start; }
-  .num { font-family: "Schibsted Grotesk", sans-serif; font-weight: 700; font-size: 17px;
-         font-variant-numeric: tabular-nums; line-height: 1.5;
-         background: var(--ramp); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .step h3 { margin: 0 0 4px; font-size: 15.5px; font-weight: 600; }
-  .step p { margin: 0; font-size: 14.5px; color: var(--ink-2); max-width: 58ch; }
-  .step p + p { margin-top: 7px; }
-
-  /* ---------- privacy ---------- */
-  .privacy {
-    border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px;
-    background: linear-gradient(180deg, rgba(166,77,255,.07), transparent);
-  }
-  .privacy h2 { font-size: clamp(21px, 2.6vw, 26px); }
-  .privacy p { margin: 0 0 10px; color: var(--ink-2); max-width: var(--measure); }
-  .privacy p:last-child { margin-bottom: 0; }
-
-  /* ---------- footer ---------- */
-  footer { margin-top: 92px; border-top: 1px solid var(--line); padding: 28px 0 70px; }
-  .foot-links { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 16px; font-size: 14px; }
-  .foot-note { font-size: 13px; color: var(--muted); max-width: var(--measure); margin: 0 0 8px; }
-  .hash { font-size: 11.5px; color: var(--muted); word-break: break-all; }
-
-  @media (max-width: 980px) {
-    .presets { grid-template-columns: repeat(2, 1fr); }
-    .preset:nth-child(even) { margin-top: 0; }
-  }
-  @media (max-width: 900px) {
-    /* Ordinary flow below this: there is no room to scatter anything.
-       The per-shape widths stay. Letting the images fall back to `auto` gives
-       them their raw Retina pixel size -- the 200-point square rendered at 400
-       -- so the shapes stopped comparing honestly the moment the screen got
-       narrow. */
-    .scatter { min-height: 0; display: flex; flex-direction: column; gap: 44px; }
-    .float { position: static; transform: none; max-width: 100%; }
-  }
-  @media (max-width: 760px) {
-    .sources, .features { grid-template-columns: 1fr; }
-    .presets { grid-template-columns: 1fr; }
-    .hero { padding-top: 44px; }
-    section { padding-top: 62px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-  }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>GlassDeck — A Better Now Playing for Your Mac</title>
+<meta name="description" content="GlassDeck is a free floating Now Playing widget for macOS with four layouts, live audio visualization and deeply customizable glass." />
+<link rel="icon" href="icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="GlassDeck — A Better Now Playing for Your Mac" />
+<meta property="og:description" content="A free floating Now Playing widget for macOS: four layouts, a real audio spectrum, and glass you can tune live." />
+<meta property="og:image" content="assets/shot-full-dark.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>.gotcha{max-width:62ch;margin:0 auto 30px;opacity:.7;font-size:.95em;line-height:1.6}.perms{max-width:920px;margin:38px auto 30px;text-align:left;border-top:1px solid rgba(255,255,255,.09);padding-top:28px}.perms h3{font-size:1.05rem;margin:0 0 18px;text-align:center;opacity:.9}.permgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}.permgrid>div{display:flex;flex-direction:column;gap:6px}.permgrid b{font-size:.95rem}.permgrid span{opacity:.62;font-size:.88rem;line-height:1.55}.gotcha2{max-width:70ch;margin:26px auto 0;opacity:.7;font-size:.92em;line-height:1.6;text-align:center}.pfine{opacity:.66;font-size:.92em;margin-top:14px}html,body{overflow-x:clip;max-width:100%}
+:root{--bg:#050609;--panel:#0d1116;--panel2:#11161d;--text:#f6f7f9;--muted:#a8adb5;--line:rgba(255,255,255,.12);--yellow:#fff200;--yellow2:#ffd400;--pink:#ff2e94;--violet:#a64dff;--cyan:#21e6ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,Arial,sans-serif;overflow-x:hidden}
+a{color:inherit}.wrap{width:min(1320px,calc(100% - 40px));margin:auto}
+body:before{content:"";position:fixed;inset:-20%;z-index:-3;background:radial-gradient(circle at 70% 8%,rgba(255,242,0,.20),transparent 25%),radial-gradient(circle at 20% 70%,rgba(166,77,255,.07),transparent 26%),#050609}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E")}
+nav{position:sticky;top:0;z-index:50;background:rgba(5,6,9,.72);backdrop-filter:blur(22px);border-bottom:1px solid rgba(255,255,255,.07)}.navin{height:78px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;gap:12px;align-items:center;font-size:22px;font-weight:800;letter-spacing:-.03em}.mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,var(--pink),var(--violet) 48%,var(--cyan));display:grid;place-items:center;box-shadow:0 0 35px rgba(166,77,255,.25)}.mark:before{content:"";width:24px;height:18px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.9) 0 2px,transparent 2px 4px);clip-path:polygon(0 40%,8% 40%,8% 20%,16% 20%,16% 60%,24% 60%,24% 10%,32% 10%,32% 78%,40% 78%,40% 25%,48% 25%,48% 92%,56% 92%,56% 15%,64% 15%,64% 66%,72% 66%,72% 30%,80% 30%,80% 72%,88% 72%,88% 42%,100% 42%,100% 58%,0 58%)}.links{display:flex;gap:28px;align-items:center}.links a{text-decoration:none;color:#d8dae0;font-size:14px}.links a:hover{color:white}.navright{display:flex;align-items:center;gap:14px}.gh{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);text-decoration:none;font-weight:800}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 20px;border-radius:14px;text-decoration:none;font-weight:800;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);transition:.2s}.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.08)}.btn.yellow{color:#070707;background:linear-gradient(180deg,#fff713,#ffe500);border:none;box-shadow:0 0 34px rgba(255,235,0,.26)}
+.hero{padding:76px 0 80px;position:relative}.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center}.eyebrow{font-size:13px;letter-spacing:.34em;text-transform:uppercase;color:#d0d3d8;margin-bottom:18px}.hero h1{font-size:clamp(56px,6.1vw,95px);line-height:.92;letter-spacing:-.065em;margin:0 0 24px;max-width:740px}.hero h1 .y{color:var(--yellow)}.hero p{max-width:700px;font-size:21px;line-height:1.48;color:#c5c8ce;margin:0 0 26px}.cta{display:flex;gap:12px;flex-wrap:wrap}.facts{margin-top:19px;display:flex;gap:18px;flex-wrap:wrap;color:#b8bcc3;font-size:13px}.fact:before{content:"✓";color:var(--yellow);margin-right:7px}.hero-art{min-height:590px;position:relative;display:grid;place-items:center}.spot{position:absolute;width:min(610px,120vw);height:min(610px,120vw);max-width:100vw;border-radius:50%;background:radial-gradient(circle,rgba(255,242,0,.30),rgba(255,242,0,.06) 36%,transparent 68%);filter:blur(8px)}.desk-card{position:absolute;inset:6% 0 5% 4%;border-radius:38px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.07);transform:rotate(-4deg);overflow:hidden}.desk-card:before{content:"";position:absolute;inset:-15%;background:linear-gradient(125deg,transparent 0 34%,rgba(255,242,0,.22) 42%,transparent 50%),radial-gradient(circle at 70% 20%,rgba(255,255,255,.06),transparent 30%)}.vinyl{width:min(520px,92%);position:relative;z-index:3;filter:drop-shadow(0 32px 45px rgba(0,0,0,.6));transition:transform .15s ease-out}.scribble{position:absolute;right:-12px;top:46%;transform:rotate(-5deg);z-index:4;color:#f5f5f5;font:italic 29px "Comic Sans MS",cursive;line-height:1.1;text-shadow:0 2px 8px #000}.scribble b{display:block;color:var(--yellow);font-size:40px}
+.layouts{padding:70px 0 110px;border-top:1px solid rgba(255,255,255,.06)}.section-head{text-align:center;max-width:880px;margin:0 auto 34px}.section-head h2{font-size:clamp(40px,4.8vw,67px);line-height:1;letter-spacing:-.05em;margin:0 0 14px}.section-head p{font-size:18px;color:var(--muted);line-height:1.55}.controlbar{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:26px 0}.seg{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:100%;background:rgba(255,255,255,.025);padding:5px;border:1px solid rgba(255,255,255,.07);border-radius:16px}.tab{border:0;background:transparent;color:#c6c9cf;font:inherit;font-weight:700;padding:12px 24px;border-radius:11px;cursor:pointer}.tab.active{background:linear-gradient(#fff51a,#ffe500);color:#050505;box-shadow:0 0 28px rgba(255,240,0,.18)}.theme.active{background:rgba(255,242,0,.13);color:#fff26a}.showcase{--shot-w:900px;--shot-h:319px;--desc-w:280px;--pad:42px;--gap:40px;margin-top:24px;display:grid;grid-template-columns:1fr var(--desc-w);gap:var(--gap);align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.014));border:1px solid rgba(255,255,255,.09);border-radius:34px;padding:var(--pad);width:100%;max-width:min(100%,calc(var(--shot-w) + var(--desc-w) + var(--gap) + var(--pad)*2));min-height:max(268px,calc(var(--shot-h) + var(--pad)*2));margin-left:auto;margin-right:auto;transition:max-width .55s cubic-bezier(.32,.72,.24,1),min-height .55s cubic-bezier(.32,.72,.24,1);position:relative;overflow:hidden}@media(prefers-reduced-motion:reduce){.showcase{transition:none}}.showcase:before{content:"";position:absolute;inset:auto auto -190px -80px;width:520px;height:520px;background:radial-gradient(circle,rgba(255,242,0,.14),transparent 64%)}.showcase img{max-width:100%;max-height:320px;position:relative;filter:drop-shadow(0 28px 34px rgba(0,0,0,.55));transition:.25s}.desc h3{font-size:34px;margin:0 0 12px}.desc p{margin:0 0 18px;color:#b6bac1;line-height:1.55}.size{display:inline-block;border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:#d4d6da;font-size:13px}.desc a{display:inline-block;margin-left:15px;color:var(--yellow);font-size:14px;font-weight:800;text-decoration:none}
+.feature{padding:120px 0}.feature-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:70px;align-items:center}.copy .tag{color:var(--yellow);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.copy h2{font-size:clamp(42px,5vw,70px);line-height:.98;letter-spacing:-.055em;margin:12px 0 18px}.copy p{font-size:18px;line-height:1.6;color:#adb2ba}.visual{border-radius:32px;min-height:440px;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 60% 30%,rgba(255,242,0,.12),transparent 35%),rgba(255,255,255,.018);display:grid;place-items:center;padding:32px;overflow:hidden}.visual img{max-width:96%;filter:drop-shadow(0 30px 36px rgba(0,0,0,.55))}
+.visualizer{padding:60px 0 120px}.vizbox{border:1px solid rgba(255,255,255,.08);border-radius:40px;padding:80px 26px;text-align:center;background:radial-gradient(circle at 50% 62%,rgba(166,77,255,.20),transparent 36%),radial-gradient(circle at 42% 64%,rgba(255,46,148,.13),transparent 30%),#080a0e;overflow:hidden}.vizbox h2{font-size:clamp(47px,6vw,82px);letter-spacing:-.06em;margin:8px 0 12px}.vizbox p{color:#afb3bb;font-size:18px}.bars{height:160px;display:flex;gap:7px;align-items:center;justify-content:center;width:min(900px,95%);margin:32px auto 22px}.bar{width:12px;border-radius:99px;background:linear-gradient(to top,var(--pink),var(--violet),var(--cyan));height:var(--h);animation:bounce 1.1s ease-in-out infinite alternate;animation-delay:var(--d)}@keyframes bounce{50%{height:18px;opacity:.7}100%{height:var(--h);opacity:1}}.vizbox img{max-width:min(920px,95%);filter:drop-shadow(0 18px 30px #000)}
+.custom{padding:120px 0}.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}.preset{border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:20px;background:rgba(255,255,255,.025)}.preset strong{display:block;font-size:18px;margin-bottom:6px}.preset span{color:#9da2ab;font-size:14px}.swatch{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;border-radius:0;margin-bottom:14px}.s1{background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.03));backdrop-filter:blur(4px)}.s2{background:linear-gradient(145deg,rgba(255,255,255,.35),rgba(255,255,255,.10))}.s3{background:linear-gradient(145deg,rgba(70,70,70,.65),rgba(12,12,12,.5))}.s4{background:linear-gradient(145deg,rgba(255,46,148,.28),rgba(166,77,255,.32),rgba(33,230,255,.18))}
+.compat{padding:100px 0}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;background:rgba(255,255,255,.02)}.card h3{font-size:18px;margin:0 0 10px}.card p{font-size:14px;color:#a4a8b0;line-height:1.5}.good{color:#b8ff8b}.warn{color:#ffe270}.bad{color:#ff8585}
+.privacy{padding:110px 0}.privacybox{border-radius:34px;border:1px solid rgba(255,255,255,.08);padding:52px;background:linear-gradient(135deg,rgba(255,242,0,.05),rgba(255,255,255,.02));display:grid;grid-template-columns:1.1fr .9fr;gap:45px}.privacy h2{font-size:54px;letter-spacing:-.05em;margin:0 0 14px}.privacy p{color:#acb0b8;line-height:1.6}.checks{display:grid;gap:11px}.checks div:before{content:"✓";color:var(--yellow);margin-right:9px}
+.final{padding:100px 0 120px;text-align:center}.final h2{font-size:clamp(48px,6vw,82px);letter-spacing:-.06em;margin:0 0 14px}.final p{color:#adb1b8;font-size:18px}.install{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:26px 0 18px}.step{padding:13px 16px;border:1px solid var(--line);border-radius:13px;color:#cbd0d6;background:rgba(255,255,255,.02);font-size:14px}
+footer{border-top:1px solid rgba(255,255,255,.08);padding:40px 0 70px;color:#7f848d;font-size:13px}.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footlinks{display:flex;gap:18px;flex-wrap:wrap}.foot a{text-decoration:none;color:#a1a6ae}
+@media(max-width:980px){.links{display:none}.hero-grid,.feature-grid,.privacybox{grid-template-columns:1fr}.hero-art{min-height:500px}.showcase{grid-template-columns:1fr;max-width:100%;min-height:0}.showcase>div:first-child{display:flex;justify-content:center}.desc{text-align:center}.preset-grid,.cards{grid-template-columns:1fr 1fr}.scribble{display:none}}
+@media(max-width:620px){.wrap{width:min(100% - 24px,1320px)}.navin{height:68px}.navright .gh{display:none}.navright .btn{padding:11px 13px;font-size:12px}.brand{font-size:18px}.mark{width:36px;height:36px}.hero{padding-top:55px}.hero p{font-size:17px}.hero-art{min-height:390px}.showcase{padding:24px}.preset-grid,.cards{grid-template-columns:1fr}.facts{gap:10px}.privacy{padding-top:60px}.privacybox{padding:28px}.privacy h2{font-size:42px}}
 </style>
-</head>
+<style>.brand-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px}.brand-icon svg{display:block}.brand .mark{display:none!important}</style></head>
 <body>
-
-<div class="wrap">
-
-  <header class="top">
-    <img src="icon.png" alt="">
-    <span class="wordmark">GlassDeck</span>
-    <span class="spacer"></span>
-    <a class="top-link" href="https://github.com/GarbisT/Glassdeck-releases/blob/main/COMPATIBILITY.md">What works where</a>
-  </header>
-
-  <div class="hero">
-    <p class="eyebrow">Mac OS · free · universal</p>
-    <h1>Whatever's playing, always in view.</h1>
-    <p class="lede">A floating pane of glass that shows what you're listening to and lets you
-      drive it, without switching apps or hunting for the right window. It reads your music
-      apps and your browser tabs, including the ones behind everything else.</p>
-    <div class="cta">
-      <a class="button" href="https://github.com/GarbisT/Glassdeck-releases/releases/latest/download/GlassDeck.dmg">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12v2h12v-2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-        Download for Mac
-      </a>
-      <span class="meta"><b>Version 1.2.0</b> · Apple silicon and Intel · macOS 14 or later · 4.0 MB</span>
-    </div>
-    <div class="stage">
-      <img src="shots/full-dark-artwork.png" width="856" height="304"
-           alt="The GlassDeck widget floating over a desktop, showing album artwork, track title, artist, a progress bar and playback controls.">
-    </div>
-  </div>
-
-  <section id="shapes">
-    <h2>Four shapes, one widget</h2>
-    <p class="sub">Switch whenever you like. Everything below is a real screenshot, so you can
-      see exactly how the glass behaves against a desktop rather than a mock-up.</p>
-
-    <div class="switches">
-      <div class="switch" role="group" aria-label="Appearance">
-        <button type="button" data-set="theme" data-value="dark" aria-pressed="true">Dark</button>
-        <button type="button" data-set="theme" data-value="light" aria-pressed="false">Light</button>
-      </div>
-      <div class="switch" role="group" aria-label="Artwork slot">
-        <button type="button" data-set="mode" data-value="artwork" aria-pressed="true">Album art</button>
-        <button type="button" data-set="mode" data-value="visualizer" aria-pressed="false">Visualizer</button>
-      </div>
-    </div>
-
-    <div class="scatter">
-      <figure class="float f-full">
-        <img data-shape="full" width="428" height="152" src="shots/full-dark-artwork.png" alt="GlassDeck, full layout">
-        <figcaption>
-          <span class="shape-name">Full</span>
-          <p>Artwork or a turning record, title, artist, a scrubber you can drag, every control, and the spectrum behind it all.</p>
-        </figcaption>
-      </figure>
-      <figure class="float f-compact">
-        <img data-shape="compact" width="200" height="200" src="shots/compact-dark-artwork.png" alt="GlassDeck, compact layout" loading="lazy">
-        <figcaption>
-          <span class="shape-name">Compact</span>
-          <p>A square that fades the artwork in diagonally, controls in its corners.</p>
-        </figcaption>
-      </figure>
-      <figure class="float f-vinyl">
-        <img data-shape="vinyl" width="240" height="240" src="shots/vinyl-dark-artwork.png" alt="GlassDeck, vinyl layout" loading="lazy">
-        <figcaption>
-          <span class="shape-name">Vinyl</span>
-          <p>The cover turning on a record, under a tonearm.</p>
-        </figcaption>
-      </figure>
-      <figure class="float f-slim">
-        <img data-shape="slim" width="432" height="34" src="shots/slim-dark-artwork.png" alt="GlassDeck, slim bar layout" loading="lazy">
-        <figcaption>
-          <span class="shape-name">Slim</span>
-          <p>One line, as wide as you want it. The spectrum draws behind the words.</p>
-        </figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section id="looks">
-    <h2>Make it yours</h2>
-    <p class="sub">The same widget, four glass recipes. Every one of these is a preset you can
-      pick in one click, and every value behind them is a slider you can move yourself.</p>
-    <div class="presets">
-      <figure class="preset">
-        <img src="shots/preset-clear.png" width="240" height="240" alt="GlassDeck with the Clear preset" loading="lazy">
-        <figcaption><span class="shape-name">Clear</span><p>Barely there. Thin material, almost no frost, a strong sheen along the rim.</p></figcaption>
-      </figure>
-      <figure class="preset">
-        <img src="shots/preset-frosted.png" width="240" height="240" alt="GlassDeck with the Frosted preset" loading="lazy">
-        <figcaption><span class="shape-name">Frosted</span><p>Milky and solid. The desktop reads as light and colour rather than detail.</p></figcaption>
-      </figure>
-      <figure class="preset">
-        <img src="shots/preset-smoke.png" width="240" height="240" alt="GlassDeck with the Smoke preset" loading="lazy">
-        <figcaption><span class="shape-name">Smoke</span><p>Heavier, with a contrast scrim underneath for busy wallpaper.</p></figcaption>
-      </figure>
-      <figure class="preset">
-        <img src="shots/preset-aurora.png" width="240" height="240" alt="GlassDeck with the Aurora preset" loading="lazy">
-        <figcaption><span class="shape-name">Aurora</span><p>Thin glass carrying a heavy wash of colour pulled from the cover.</p></figcaption>
-      </figure>
-    </div>
-    <div class="tunables">
-      <span class="tunable">Glass material</span>
-      <span class="tunable">Frost</span>
-      <span class="tunable">Translucency</span>
-      <span class="tunable">Contrast scrim</span>
-      <span class="tunable">Tint colour</span>
-      <span class="tunable">Tint from artwork</span>
-      <span class="tunable">Tint strength</span>
-      <span class="tunable">Corner radius</span>
-      <span class="tunable">Sheen</span>
-      <span class="tunable">Grain</span>
-      <span class="tunable">Light or dark</span>
-      <span class="tunable">Framed or floating buttons</span>
-      <span class="tunable">Six visualiser styles</span>
-      <span class="tunable">Artwork or spectrum</span>
-      <span class="tunable">Bar width</span>
-      <span class="tunable">Float above windows</span>
-      <span class="tunable">Show on all Spaces</span>
-    </div>
-  </section>
-
-  <section id="features">
-    <h2>What it does</h2>
-    <div class="features">
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>Real controls</h3>
-        <p>Play, skip, scrub, shuffle, repeat and favourite. Not a read-out you can only look at.</p>
-      </div>
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>Background tabs</h3>
-        <p>Your music can be three tabs deep behind everything else and still show up here.</p>
-      </div>
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>Glass you can tune</h3>
-        <p>Material, frost, tint, contrast, corner radius, sheen and grain, all live while you drag.</p>
-      </div>
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>Colour from the cover</h3>
-        <p>The tint follows the album art, and your scrubber handle follows the tint. Six handles to choose from.</p>
-      </div>
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>A real spectrum</h3>
-        <p>Six styles drawn from the sound your Mac is already making. On the wide panel it runs behind the words without costing you the album art.</p>
-      </div>
-      <div class="feature">
-        <span class="dot"></span>
-        <h3>Stays put</h3>
-        <p>Float above other windows, show on every Space, and it remembers where you left it.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="sources">
-    <h2>Where your music can come from</h2>
-    <p class="sub">Desktop apps work with nothing to set up. Browsers need one switch flipped once,
-      and the setup guide walks you through it.</p>
-    <div class="sources">
-      <div class="panel">
-        <h3>Services</h3>
-        <div class="chips">
-          <span class="chip">Apple Music</span>
-          <span class="chip">Spotify</span>
-          <span class="chip">YouTube Music</span>
-          <span class="chip">YouTube</span>
-          <span class="chip">Tidal</span>
-          <span class="chip">Deezer</span>
-          <span class="chip">SoundCloud</span>
-          <span class="chip">Bandcamp</span>
-        </div>
-        <p class="note">Most other web players announce themselves in the same standard way and
-          work too. How much you get varies by service.</p>
-      </div>
-      <div class="panel">
-        <h3>Browsers</h3>
-        <div class="chips">
-          <span class="chip">Chrome</span>
-          <span class="chip">Brave</span>
-          <span class="chip">Edge</span>
-          <span class="chip">Vivaldi</span>
-          <span class="chip">Safari</span>
-          <span class="chip">Opera</span>
-          <span class="chip no">Firefox</span>
-        </div>
-        <p class="note">Firefox gives no way for another app to ask what a page is doing, so music
-          playing there is invisible. Opera needs its tab in front.
-          <a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/COMPATIBILITY.md">The full picture, service by service</a>.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="install">
-    <h2>Installing it</h2>
-    <p class="sub">Two of these are the mistakes people actually make, so they are worth reading
-      before you start rather than after.</p>
-    <div class="steps">
-      <div class="step">
-        <span class="num">1</span>
-        <div>
-          <h3>Open the download and drag GlassDeck to Applications</h3>
-          <p>The window shows you where it goes.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="num">2</span>
-        <div>
-          <h3>Open it from your Applications folder, not from the download window</h3>
-          <p>Opening it in place runs it from the disk image. It then refuses to eject, and the
-            app disappears when it finally does.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="num">3</span>
-        <div>
-          <h3>Work through the setup guide that appears</h3>
-          <p>Three macOS permissions and one browser switch, each with what it buys you. None are
-            mandatory: decline any and the widget still works, just with less detail.</p>
-          <p>Accessibility is the one worth granting. Without it the buttons stay greyed out.</p>
-        </div>
-      </div>
-      <div class="step">
-        <span class="num">4</span>
-        <div>
-          <h3>If no icon appears in your menu bar, nothing is wrong</h3>
-          <p>A full menu bar makes macOS drop icons silently. Right-click the widget itself:
-            settings, updates, the documents, a bug report and the way to quit all live
-            there too.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="privacy">
-    <div class="privacy">
-      <h2>It does not phone home</h2>
-      <p>No account, no sign-in, no analytics, no telemetry. Nothing about you, your Mac or your
-        listening is sent to the developer, because there is no server to send it to. No history of
-        what you played is written down anywhere.</p>
-      <p>It makes four ordinary web requests and the privacy statement names all four, including
-        the two you would not guess. Worth two minutes if you care, and you should.</p>
-      <p><a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/PRIVACY.md">Read the privacy statement</a></p>
-    </div>
-  </section>
-
-  <footer>
-    <div class="foot-links">
-      <a href="https://github.com/GarbisT/Glassdeck-releases/releases/latest/download/GlassDeck.dmg">Download</a>
-      <a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/COMPATIBILITY.md">What works where</a>
-      <a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/PRIVACY.md">Privacy</a>
-      <a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/LICENSE.md">Licence</a>
-      <a href="https://github.com/GarbisT/Glassdeck-releases/releases">All releases</a>
-      <a href="https://github.com/GarbisT/Glassdeck-releases/issues">Report a problem</a>
-    </div>
-    <p class="foot-note"><b>On Intel Macs:</b> this build carries the Intel architecture and it is
-      verified present, but it has so far only been run on Apple silicon. If you are on an Intel Mac,
-      a note either way would genuinely help.</p>
-    <p class="foot-note">GlassDeck is free to use and not free to redistribute. Send people this
-      page rather than the file, so they get updates.</p>
-    <p class="hash mono">1.2.0 · SHA-256 ae12e3923a2dcca5db8f795d23b37b7b154e097a345e3cba24024e4890e29313</p>
-  </footer>
-
-</div>
-
+<div class="noise"></div>
+<nav><div class="wrap navin"><div class="brand"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 44 44" width="42" height="42"><defs><linearGradient id="gdSpec" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#ff2e94"/><stop offset="52%" stop-color="#a64dff"/><stop offset="100%" stop-color="#21e6ff"/></linearGradient></defs><rect x="1" y="1" width="42" height="42" rx="11" fill="#17171c" stroke="rgba(255,255,255,.14)"/><g fill="url(#gdSpec)"><rect x="8" y="18" width="3" height="8" rx="1.5"/><rect x="13" y="13" width="3" height="18" rx="1.5"/><rect x="18" y="8" width="3" height="28" rx="1.5"/><rect x="23" y="12" width="3" height="20" rx="1.5"/><rect x="28" y="16" width="3" height="12" rx="1.5"/><rect x="33" y="19" width="3" height="6" rx="1.5"/></g></svg></span><span>GlassDeck</span></div><div class="links"><a href="#features">Features</a><a href="#customize">Customize</a><a href="#compatibility">Compatibility</a><a href="#privacy">Privacy</a><a href="#install">Install</a></div><div class="navright"><a class="gh" href="https://github.com/GarbisT/Glassdeck-releases" aria-label="GitHub">⌘</a><a class="btn yellow" href="https://github.com/GarbisT/Glassdeck-releases/releases/latest/download/GlassDeck.dmg">↓ Download for macOS</a></div></div></nav>
+<main>
+<section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">A better Now Playing for your Mac</div><h1>Your music.<br>On your desktop.<br><span class="y">Your way.</span></h1><p>GlassDeck is a floating Now Playing widget for macOS that lets you see, control and customize whatever you’re already listening to — without hunting for the right app or browser tab.</p><div class="cta"><a class="btn yellow" href="https://github.com/GarbisT/Glassdeck-releases/releases/latest/download/GlassDeck.dmg"> Download GlassDeck ↓</a><a class="btn" href="https://github.com/GarbisT/Glassdeck-releases">View on GitHub</a></div><div class="facts"><span class="fact">macOS 14+</span><span class="fact" title="The Intel architecture is present and verified, but has only been run on Apple silicon so far.">Apple silicon &middot; Intel untested</span><span class="fact">4.0 MB</span><span class="fact">Notarized</span></div></div><div class="hero-art" id="heroArt"><div class="spot"></div><div class="desk-card"></div><img class="vinyl" id="vinyl" src="assets/hero-vinyl.png" alt="GlassDeck Vinyl widget"><div class="scribble">Floating.<br>Beautiful.<br>Yours.<b>⌁</b></div></div></div></section>
+<section class="layouts" id="features"><div class="wrap"><div class="section-head"><h2>One widget. Four ways to make it yours.</h2><p>Choose your shape, then make it yours with different themes, visualizers and live customization.</p></div><div class="controlbar"><div class="seg" id="layoutTabs"><button class="tab active" data-layout="full">Full</button><button class="tab" data-layout="compact">Compact</button><button class="tab" data-layout="vinyl">Vinyl</button><button class="tab" data-layout="slim">Slim</button></div><div class="seg" id="themeTabs"><button class="tab theme" data-theme="light">☀ Light</button><button class="tab theme active" data-theme="dark">☾ Dark</button></div></div><div class="showcase"><div><img id="showImg" src="assets/shot-full-dark.png" alt="GlassDeck Full layout"></div><div class="desc"><h3 id="showTitle">Full</h3><p id="showDesc">Everything at once: album art or a turning record, track info, a draggable scrubber, every control, and the spectrum running behind it all.</p><span class="size" id="showSize">428 × 152</span><a href="#customize">See all features →</a></div></div></div></section>
+<section class="feature"><div class="wrap feature-grid"><div class="copy"><div class="tag">Stay in flow</div><h2>Control your music without finding it first.</h2><p>Play, pause, skip, scrub, shuffle, repeat and favourite where your music source supports it. GlassDeck stays in reach while the player itself can stay buried in another app or browser tab.</p><a class="btn" href="https://github.com/GarbisT/Glassdeck-releases/blob/main/COMPATIBILITY.md">View compatibility</a></div><div class="visual"><img src="assets/feature-full.png" alt="GlassDeck Full player" loading="lazy" decoding="async"></div></div></section>
+<section class="visualizer"><div class="wrap"><div class="vizbox"><div class="eyebrow" style="margin-bottom:4px">Live audio visualization</div><h2>It doesn’t fake the beat.</h2><p>A real spectrum, drawn from the audio your Mac is already playing.</p><div class="bars" id="bars"></div><img src="assets/feature-slim-visualizer.png" alt="GlassDeck Slim visualizer" loading="lazy" decoding="async"><p style="font-size:14px;margin-top:24px">Bars · Mirror · Line · Ribbon · Wave · Dots</p></div></div></section>
+<section class="custom" id="customize"><div class="wrap"><div class="section-head"><h2>Glass that actually behaves like glass.</h2><p>Tune frost, translucency, tint, sheen, grain, corner radius and more — live, with no apply button.</p></div><div class="feature-grid"><div class="visual"><img src="assets/feature-compact-visualizer.png" alt="Compact GlassDeck with visualizer" loading="lazy" decoding="async"></div><div class="copy"><div class="tag">Live controls</div><h2>Make it subtle. Or make it yours.</h2><p>Let the tint follow the current artwork, dial in exactly how frosted the panel feels, or switch instantly between four curated presets.</p><div class="preset-grid"><div class="preset"><img class="swatch" src="assets/preset-clear.png" alt="GlassDeck with the Clear preset" loading="lazy"><strong>Clear</strong><span>Barely there</span></div><div class="preset"><img class="swatch" src="assets/preset-frosted.png" alt="GlassDeck with the Frosted preset" loading="lazy"><strong>Frosted</strong><span>Soft and milky</span></div><div class="preset"><img class="swatch" src="assets/preset-smoke.png" alt="GlassDeck with the Smoke preset" loading="lazy"><strong>Smoke</strong><span>For busy desktops</span></div><div class="preset"><img class="swatch" src="assets/preset-aurora.png" alt="GlassDeck with the Aurora preset" loading="lazy"><strong>Aurora</strong><span>Thin glass, heavy colour</span></div></div></div></div></div></section>
+<section class="compat" id="compatibility"><div class="wrap"><div class="section-head"><h2>Works best where macOS gives it something to work with.</h2><p>Compatibility varies by player. GlassDeck tells the truth about that instead of pretending every source exposes the same controls.</p></div><div class="cards"><div class="card"><h3 class="good">Best experience</h3><p>Apple Music and Spotify desktop. Full metadata and controls where the app exposes them.</p></div><div class="card"><h3 class="good">Full browser control</h3><p>Chrome, Brave, Edge, Vivaldi and Safari after enabling Apple Events JavaScript access once.</p></div><div class="card"><h3 class="warn">Partial support</h3><p>Opera, Tidal, Deezer, Bandcamp and many other web players expose varying levels of control.</p></div><div class="card"><h3 class="bad">Unsupported</h3><p>Firefox does not expose a mechanism another macOS app can use to inspect playback.</p></div></div></div></section>
+<section class="privacy" id="privacy"><div class="wrap privacybox"><div><h2>No account. No analytics. No listening history.</h2><p>GlassDeck has no telemetry backend and no account system. It stores only local preferences such as appearance, widget position and update settings.</p><p class="pfine">It is not silent, and it will not pretend to be. It makes three kinds of ordinary web request and no others: a once-a-day update check to GitHub, which you can switch off; a lookup of the title and length of a YouTube video you are playing, from Google’s public endpoints; and a fetch of the cover art from whichever service is hosting it. None of them carry anything about you, and none of them reach the developer.</p><a class="btn" href="https://github.com/GarbisT/Glassdeck-releases/blob/main/PRIVACY.md">Read the privacy statement</a></div><div class="checks"><div>No sign-in</div><div>No analytics</div><div>No telemetry</div><div>No playback history stored</div><div>Update checks can be disabled</div></div></div></section>
+<section class="final" id="install"><div class="wrap"><h2>GlassDeck is free.</h2><p>No subscription. No account. Download it, move it to Applications and use it.</p><div class="install"><span class="step">1. Download</span><span class="step">2. Open the DMG</span><span class="step">3. Drag to Applications</span><span class="step">4. Open it <em>from Applications</em></span></div><p class="gotcha"><b>Not from the disk image window.</b> Opening it where it sits runs it from the disk image, which then refuses to eject, and the app disappears when it finally does.</p><div class="perms"><h3>What macOS will ask for</h3><div class="permgrid"><div><b>Accessibility</b><span>Lets GlassDeck press play, skip, shuffle and repeat inside your browser’s own player. Without it those buttons stay greyed out. This is the one worth granting.</span></div><div><b>Automation</b><span>Lets it ask Music, Spotify or your browser what is playing. macOS asks once per app, the first time each is read.</span></div><div><b>Audio recording &mdash; optional</b><span>Only for the spectrum visualiser, which reads the sound your Mac is already making. Nothing is recorded or sent. Decline it and the bars fall back to an animation.</span></div><div><b>One browser switch</b><span>Chrome, Brave, Edge, Vivaldi and Safari each need <i>Allow JavaScript from Apple Events</i> turned on once. Vivaldi and Safari keep it somewhere other than Chrome does &mdash; the compatibility guide has all three paths.</span></div></div><p class="gotcha2"><b>No icon in your menu bar? Nothing is wrong.</b> A full menu bar makes macOS drop icons silently. Right-click the widget itself: settings, updates, the documents and the way to quit all live there too.</p></div><a class="btn yellow" href="https://github.com/GarbisT/Glassdeck-releases/releases/latest/download/GlassDeck.dmg">↓ Download GlassDeck</a></div></section>
+</main>
+<footer><div class="wrap foot"><div>GlassDeck · Free proprietary macOS software</div><div class="footlinks"><a href="https://github.com/GarbisT/Glassdeck-releases/releases">Releases</a><a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/COMPATIBILITY.md">Compatibility</a><a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/GarbisT/Glassdeck-releases/blob/main/LICENSE.md">Licence</a><a href="https://github.com/GarbisT/Glassdeck-releases/issues">Issues</a></div></div></footer>
 <script>
-  // Swaps every screenshot at once. Four shapes across two appearances and two
-  // artwork modes is sixteen files; the name carries all three facts, so there
-  // is nothing to look up.
-  var state = { theme: "dark", mode: "artwork" };
-  var shots = document.querySelectorAll("[data-shape]");
-  var hero = document.querySelector(".stage img");
+const map={
+ full:{
+   dark:'assets/shot-full-dark.png',
+   light:'assets/shot-full-light.png',
+   title:'Full',
+   desc:'Everything at once: album art or a turning record, track info, a draggable scrubber, every control, and the spectrum running behind it all.',
+   size:'428 × 152'
+ },
+ compact:{
+   dark:'assets/shot-compact-dark.png',
+   light:'assets/shot-compact-light.png',
+   title:'Compact',
+   desc:'A square layout with artwork fading behind the track information and controls tucked into the corners.',
+   size:'200 × 200'
+ },
+ vinyl:{
+   dark:'assets/shot-vinyl-dark.png',
+   light:'assets/shot-vinyl-light.png',
+   title:'Vinyl',
+   desc:'The cover turns on a record beneath a tonearm — the most tactile, characterful GlassDeck layout.',
+   size:'240 × 240'
+ },
+ slim:{
+   dark:'assets/shot-slim-dark.png',
+   light:'assets/shot-slim-light.png',
+   title:'Slim',
+   desc:'A one-line player with scrolling title, transport controls and the spectrum drawn behind the content.',
+   size:'300–600 × 34'
+ }
+};
+let activeLayout='full';
+let activeTheme='dark';
 
-  function apply() {
-    shots.forEach(function (img) {
-      img.src = "shots/" + img.dataset.shape + "-" + state.theme + "-" + state.mode + ".png";
-    });
-    hero.src = "shots/full-" + state.theme + "-" + state.mode + ".png";
-  }
+function resolvedTheme(){
+  return activeTheme==='system'
+    ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+    : activeTheme;
+}
 
-  document.querySelectorAll(".switch button").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var set = btn.dataset.set;
-      state[set] = btn.dataset.value;
-      btn.parentNode.querySelectorAll("button").forEach(function (b) {
-        b.setAttribute("aria-pressed", String(b === btn));
-      });
-      apply();
-    });
-  });
+function sizeShowcase(){
+  const img=document.getElementById('showImg');
+  const card=document.querySelector('.showcase');
+  if(!img||!card||!img.naturalWidth) return;
+  // The cap lives in the stylesheet; read it back rather than repeating it here.
+  const cap=parseFloat(getComputedStyle(img).maxHeight)||Infinity;
+  const h=Math.min(cap,img.naturalHeight);
+  card.style.setProperty('--shot-w',Math.round(img.naturalWidth*(h/img.naturalHeight))+'px');
+  card.style.setProperty('--shot-h',Math.round(h)+'px');
+}
+
+function renderShowcase(animate=true){
+  const d=map[activeLayout];
+  const img=document.getElementById('showImg');
+  const apply=()=>{
+    img.src=d[resolvedTheme()];
+    img.alt=`GlassDeck ${d.title} layout — ${resolvedTheme()} theme`;
+    document.getElementById('showTitle').textContent=d.title;
+    document.getElementById('showDesc').textContent=d.desc;
+    document.getElementById('showSize').textContent=d.size;
+    img.style.opacity=1;
+    img.style.transform='scale(1)';
+    // A data URI is usually decoded already; if it is not, size on load.
+    if(img.complete) sizeShowcase(); else img.addEventListener('load',sizeShowcase,{once:true});
+  };
+  if(animate){
+    img.style.opacity=.15;
+    img.style.transform='scale(.97)';
+    setTimeout(apply,140);
+  } else apply();
+}
+
+document.querySelectorAll('#layoutTabs .tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#layoutTabs .tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  activeLayout=b.dataset.layout;
+  renderShowcase();
+}));
+
+document.querySelectorAll('#themeTabs .theme').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#themeTabs .theme').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  activeTheme=b.dataset.theme;
+  renderShowcase();
+}));
+
+const systemTheme=window.matchMedia('(prefers-color-scheme: light)');
+if(systemTheme.addEventListener){
+  systemTheme.addEventListener('change',()=>{ if(activeTheme==='system') renderShowcase(false); });
+}
+
+renderShowcase(false);
+window.addEventListener('resize',sizeShowcase);
+// The shots are files now rather than part of the page, so warm them after
+// first paint: a tab should never wait on a download.
+addEventListener('load',()=>{
+  for(const k in map) for(const theme of ['dark','light']) new Image().src=map[k][theme];
+});
+const bars=document.getElementById('bars');for(let i=0;i<42;i++){const e=document.createElement('i');e.className='bar';e.style.setProperty('--h',(26+Math.random()*130)+'px');e.style.setProperty('--d',(-Math.random()*1.7)+'s');bars.appendChild(e)}
+const art=document.getElementById('heroArt'),vinyl=document.getElementById('vinyl');art.addEventListener('mousemove',e=>{const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;vinyl.style.transform=`rotateY(${x*6}deg) rotateX(${-y*5}deg) translate(${x*5}px,${y*5}px)`});art.addEventListener('mouseleave',()=>vinyl.style.transform='');
 </script>
-
-</body>
-</html>
+</body></html>

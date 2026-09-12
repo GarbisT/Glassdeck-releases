@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
-  "build": "9",
+  "version": "1.2.1",
+  "build": "10",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "A record instead of the album art, six scrubber handles, an in-app bug report, and a browser that refuses now says so.",
+  "notes": "The artwork tile now turns over between the cover and the record.",
   "minimumSystemVersion": "14.0"
 }
