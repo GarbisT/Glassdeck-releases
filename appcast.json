@@ -1,7 +1,7 @@
 {
-  "version": "1.2.1",
-  "build": "10",
+  "version": "1.2.2",
+  "build": "11",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "The artwork tile now turns over between the cover and the record.",
+  "notes": "An optional Support GlassDeck row on both menus.",
   "minimumSystemVersion": "14.0"
 }
