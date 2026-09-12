@@ -19,6 +19,11 @@ GlassDeck saves your preferences in the standard macOS preferences store, under
   scrubber handle you chose
 - where you left the widget on screen, and whether it floats above other windows
   or shows on all Spaces
+- whether it hides itself when nothing is playing, and how long it waits first
+- any keyboard shortcuts you assign, as the key and modifiers you chose. Nothing
+  is assigned unless you assign it, and nothing else about your typing is read
+  or stored: a shortcut is registered with macOS, which tells GlassDeck only
+  that your combination was pressed
 - the browser debugging port, if you changed it
 - whether the setup guide has been shown, and your update-check preference
 
