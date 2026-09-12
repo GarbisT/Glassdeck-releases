@@ -31,14 +31,18 @@ repeat and save on sites that offer them.
 
 ### 3. Opera
 
-Opera removed the ability for other apps to talk to its pages, so GlassDeck
-reads the player the way a screen reader would. That works well, with two
-limits: the music tab has to be the one you are looking at, and the progress bar
-is read-only. Switch to another tab and the widget drops to just the track name
-with the buttons greyed out.
+Opera is the one browser that cannot run JavaScript sent by another app: the
+command is commented out of its scripting definition and no setting turns it
+back on. Everything else about its scripting works, tab titles and addresses
+included, so GlassDeck reads the player the way a screen reader would. That
+works well, with two limits: the music tab has to be the one you are looking at,
+and the progress bar is read-only. Switch to another tab and the widget drops to
+just the track name with the buttons greyed out.
 
 **You get** artwork, a playhead, skip, shuffle and repeat *while the music tab is
-in front*. No scrubbing, unless you start Opera with a debugging port.
+in front*. No scrubbing, unless you start Opera with a debugging port — and with
+that port Opera is as capable as any browser here, background tabs included. See
+[Scrubbing in Opera](#scrubbing-in-opera).
 
 ### 4. A browser without that setting
 
@@ -181,15 +185,19 @@ Moving or reinstalling the app on its own does not cost you the permission.
 
 ### Scrubbing in Opera
 
-Opera gives no app a way to move its playhead, so the widget's progress bar is
-read-only there. The one way round it is to start Opera with a debugging port.
+Moving the playhead needs JavaScript, and Opera is the one browser that will not
+run any on another app's behalf, so the widget's progress bar is read-only
+there. The one way round it is to start Opera with a debugging port.
 Quit Opera fully, then run this in Terminal:
 
 ```bash
 open -na Opera --args --remote-debugging-port=9222
 ```
 
-Opera then behaves like Chrome: background tabs, and scrubbing that works.
+Opera then behaves like Chrome in every respect we have tested: background tabs,
+real state, and scrubbing that works. This was verified against a running Opera
+on 12 September 2026, after an earlier note here implied the port did nothing
+for it.
 **Understand the trade first.** A debugging port lets any program on your Mac
 drive that browser and read what is in your tabs. Fine on a machine only you use,
 a poor idea on a shared one, and you have to start Opera that way every time.
