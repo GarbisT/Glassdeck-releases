@@ -52,9 +52,19 @@ playhead with no setup at all.
 
 ### Firefox is not supported
 
-Firefox offers no way for another app on your Mac to ask what a page is doing.
-Music playing in Firefox is invisible to GlassDeck, and there is no setting that
-changes that.
+Firefox has no scripting worth the name: no tabs, no addresses, and no way to run
+JavaScript on another app's behalf. Its window title *is* readable, and on a site
+like YouTube Music that title carries the track, so the song name alone could be
+shown.
+
+That is the whole of it. No artwork, no playhead, nothing to press. Measured, not
+assumed: with Firefox's own accessibility engine switched on, its page is exposed
+as a tree of some seventeen hundred elements and not one labelled play, pause,
+next or progress control appears in it.
+
+A now-playing widget that can only name the song, with every button greyed out,
+is not worth installing, so GlassDeck does not read Firefox at all rather than
+pretend to support it.
 
 ## By service
 
