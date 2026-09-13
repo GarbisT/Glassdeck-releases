@@ -116,7 +116,7 @@ pretend to support it.
 | **YouTube Music** — Chrome, Brave, Edge, Vivaldi | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
 | **YouTube Music** — Opera | Yes | Exact | Only with a port | Yes | Press only ⁵ | Off, all, one | No |
 | **YouTube Music** — Safari | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
-| **Tidal** — tidal.com | Yes | Misleading ⁹ | Within the chunk ⁹ | Yes | No | No | No |
+| **Tidal** — tidal.com | Yes | Exact | Yes | Yes | No ⁹ | No ⁹ | No ⁹ |
 | **Deezer** — deezer.com | Readable, not shown ⁶ | No | No | No | No | No | No |
 | **Bandcamp** — bandcamp.com | Browse pages only ⁷ | No | No | No | No | No | No |
 | **Anything else on the web** | Usually | Usually | Usually | Usually | No | No | No ⁸ |
@@ -143,17 +143,21 @@ that changes on its own.
 ⁷ Album pages announce nothing at all and are not picked up. Discover pages give
 a title and artist with no artwork.
 ⁸ Most sites announce what they are playing in a standard way, and those work.
-⁹ Tidal, driven end to end through Opera. The track, artist, album and artwork
-arrive, and play, pause, next and previous all work. The clock does not: Tidal
-streams in chunks of about thirty seconds, and the only playhead it exposes
-belongs to the chunk rather than to the song. So a four-minute track shows as
-half a minute, the bar fills and starts again, and dragging it moves you inside
-that chunk rather than through the song.
+⁹ Tidal, driven end to end through Opera. Track, artist, album, artwork, an
+exact playhead, scrubbing, play, pause, next and previous all work.
 
-It also blinks. Tidal clears what it announces between chunks, so the widget
-loses the track for a moment and finds it again: measured over 37 polls with
-music playing, 17 of them saw nothing at all. In practice the panel flickers
-between the song and an empty widget.
+Shuffle, repeat and the heart do not, and this is a gap in GlassDeck rather than
+in Tidal: Tidal's player bar labels all three properly and says whether each is
+on, so they could be supported the way Spotify's and YouTube Music's already
+are. Nobody has written that yet.
+
+**A caution about how this was tested.** The account was logged out, so every
+track was a thirty-second preview. The widget showed thirty-second tracks
+because that is what was playing — Tidal's own bar agreed, down to the second —
+and an earlier version of this note wrongly blamed the app for it. What was not
+retested with a full account is the flicker: with previews the reading vanished
+on 17 of 37 polls as each new preview loaded, and how often that happens on real
+tracks is unmeasured.
 Shuffle, repeat and favourite are always site-specific.
 
 ### Repeat-one in Spotify's app cannot be seen from outside it
@@ -323,7 +327,8 @@ afterwards.
 
 Deezer was driven end to end through Opera with a debugging port, using the
 app's own `--cdp` diagnostic against a playing tab, as was Tidal, including its
-transport and the poll-by-poll count behind the note on blinking. Bandcamp was
+transport and the poll-by-poll count behind the note on blinking, though Tidal
+was logged out and therefore playing previews. Bandcamp was
 verified by inspecting what its player exposes to the Mac while a track was
 playing, which is what determines its row, but the widget has not yet been
 pointed at it end to end.
