@@ -58,6 +58,14 @@ Artwork for all four comes from the file itself rather than the player, so a
 tagged file shows its cover and an untagged one does not. An untagged file also
 shows its filename as the title, because that is all the player knows.
 
+**What has been watched, and what has not.** Swinsian, VOX and VLC were each
+driven through the widget against a running copy: metadata, playhead, seeking
+and every control the player offers. IINA is the exception. Its reading was
+proven by hand — the title, both clocks, a slider that moved when set, and a
+play button that stopped the clock when pressed — but the widget's own code has
+never been watched driving it, because IINA quit twice before the build was
+ready. Treat IINA as the least proven of the four.
+
 ### 2. A browser, with one setting turned on — Chrome, Brave, Edge, Vivaldi, Safari
 
 Just as capable as a desktop app for web players, and it works on background
@@ -143,26 +151,28 @@ that changes on its own.
 ⁷ Album pages announce nothing at all and are not picked up. Discover pages give
 a title and artist with no artwork.
 ⁸ Most sites announce what they are playing in a standard way, and those work.
-⁹ Tidal, driven end to end through Opera. Track, artist, album, artwork, an
-exact playhead, scrubbing, play, pause, next and previous all work.
+⁹ Tidal, driven end to end through Opera on a signed-in account. Everything
+works: track, artist, album, artwork, an exact playhead, scrubbing, play, pause,
+next, previous, shuffle, all three repeat modes, and the heart. Pressing the
+star on the widget turned Tidal's own control to "Remove from My Collection",
+and pressing it again put the track back.
 
-Shuffle and repeat work too, both read and pressed, with repeat covering all
-three modes. Driven through the widget against a live tab.
+**Two things had to be fixed to get there, and both were ours.** Tidal keeps two
+media elements on the page: one finished and silent, one playing. The widget
+read the first, so it reported a paused track with the previous song's length
+and refused to show Tidal at all while it played out loud. It now reads whichever
+element is playing and audible. Anything else that keeps a spare element benefits
+from the same change.
 
-The heart is implemented and untested. Tidal shows the same "Add to My
-Collection" button on every row of every list, so the widget presses only the
-one sitting on the same line as the play button, which is the one belonging to
-the track you are hearing. The account used for testing was logged out, and a
-logged-out Tidal shows no heart in the player bar at all, so the star simply
-does not appear. With an account it should; nobody has watched it yet.
+The heart is found by the name Tidal gives it inside its player bar, not by
+where it sits. Tidal puts an identical "Add to My Collection" button on every row
+of every list, so a looser match would favourite whatever you were scrolling
+past. That control only exists while you are signed in; logged out, the star does
+not appear at all.
 
-**A caution about how this was tested.** The account was logged out, so every
-track was a thirty-second preview. The widget showed thirty-second tracks
-because that is what was playing — Tidal's own bar agreed, down to the second —
-and an earlier version of this note wrongly blamed the app for it. What was not
-retested with a full account is the flicker: with previews the reading vanished
-on 17 of 37 polls as each new preview loaded, and how often that happens on real
-tracks is unmeasured.
+The Tidal desktop application is a different matter: it is an Electron wrapper
+with no scripting, and enabling its accessibility engine exposed an empty page,
+so the only thing readable there is the window title. Use the website.
 Shuffle, repeat and favourite are always site-specific.
 
 ### Repeat-one in Spotify's app cannot be seen from outside it
@@ -330,13 +340,26 @@ and YouTube Music in Chrome, Vivaldi, Edge, Safari and Opera were driven through
 the widget itself, with every control pressed and every setting put back
 afterwards.
 
-Deezer was driven end to end through Opera with a debugging port, using the
-app's own `--cdp` diagnostic against a playing tab, as was Tidal, including its
-transport and the poll-by-poll count behind the note on blinking, though Tidal
-was logged out and therefore playing previews. Bandcamp was
-verified by inspecting what its player exposes to the Mac while a track was
-playing, which is what determines its row, but the widget has not yet been
-pointed at it end to end.
+Deezer and Tidal were driven end to end through Opera with a debugging port,
+using the app's own `--cdp` diagnostic and the widget together against playing
+tabs, Tidal on a signed-in account with its shuffle, repeat and heart each
+pressed and put back. Bandcamp was verified by inspecting what its player
+exposes to the Mac while a track was playing, which is what determines its row,
+but the widget has not yet been pointed at it end to end.
+
+The local players were driven through the widget against running copies, with
+one exception named in their own section: IINA's reading was proven by hand but
+its provider has not been watched working.
+
+Firefox and the Tidal desktop application were each examined directly, including
+switching on the accessibility engine they keep off by default, to establish
+what they expose rather than what they are assumed to expose. In both cases the
+answer was a window title and nothing else.
+
+Where a claim here says something is unproven, that is not modesty. Three rows
+in earlier versions of this guide were confidently wrong — Firefox, Deezer and
+Tidal — and each was corrected only because somebody sat down with the app
+running.
 
 GlassDeck has so far only been run on Apple silicon. Anything not listed has not
 been tested.
