@@ -58,13 +58,13 @@ Artwork for all four comes from the file itself rather than the player, so a
 tagged file shows its cover and an untagged one does not. An untagged file also
 shows its filename as the title, because that is all the player knows.
 
-**What has been watched, and what has not.** Swinsian, VOX and VLC were each
-driven through the widget against a running copy: metadata, playhead, seeking
-and every control the player offers. IINA is the exception. Its reading was
-proven by hand — the title, both clocks, a slider that moved when set, and a
-play button that stopped the clock when pressed — but the widget's own code has
-never been watched driving it, because IINA quit twice before the build was
-ready. Treat IINA as the least proven of the four.
+**All four were driven through the widget against a running copy**: metadata,
+playhead, seeking, and every control the player offers. IINA took the longest to
+confirm, since the transport is found by the arrangement of its unnamed buttons:
+pressing pause on the widget froze IINA's clock and left it there, pressing play
+resumed it, and dragging the widget's scrubber moved IINA's position. The
+fragility noted above is about future versions of IINA, not about whether it
+works today.
 
 ### 2. A browser, with one setting turned on — Chrome, Brave, Edge, Vivaldi, Safari
 
