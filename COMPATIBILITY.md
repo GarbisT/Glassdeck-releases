@@ -116,7 +116,7 @@ pretend to support it.
 | **YouTube Music** — Opera | Yes | Exact | Only with a port | Yes | Press only ⁵ | Off, all, one | No |
 | **YouTube Music** — Safari | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
 | **Tidal** — listen.tidal.com | Yes | Exact | Yes | Yes | No | No | No |
-| **Deezer** — deezer.com | Yes | No | No | No | No | No | No ⁶ |
+| **Deezer** — deezer.com | Readable, not shown ⁶ | No | No | No | No | No | No |
 | **Bandcamp** — bandcamp.com | Browse pages only ⁷ | No | No | No | No | No | No |
 | **Anything else on the web** | Usually | Usually | Usually | Usually | No | No | No ⁸ |
 
@@ -129,8 +129,16 @@ the song comes back.
 ⁴ Safari's progress control only accepts five-second increments, so a scrub lands
 on the nearest one.
 ⁵ See "Shuffle on YouTube Music" below.
-⁶ Deezer says what is playing but exposes no player to reach into, so the widget
-shows it and cannot drive it.
+⁶ Deezer, driven end to end through Opera: the track, the artist, the album and
+the artwork all come through, and nothing else does. There is no playhead, no
+controls, and no statement of whether it is playing or paused.
+
+That last one decides the outcome. A browser reading that never says it is
+playing is indistinguishable from a tab left open days ago, and the widget
+deliberately does not adopt those — otherwise a forgotten tab would show a song
+you never started. So in practice **Deezer does not appear on the widget at
+all**, even though its details are readable. If it ever reports a play state,
+that changes on its own.
 ⁷ Album pages announce nothing at all and are not picked up. Discover pages give
 a title and artist with no artwork.
 ⁸ Most sites announce what they are playing in a standard way, and those work.
@@ -301,9 +309,11 @@ and YouTube Music in Chrome, Vivaldi, Edge, Safari and Opera were driven through
 the widget itself, with every control pressed and every setting put back
 afterwards.
 
-Tidal, Deezer and Bandcamp were verified by inspecting what their players expose
-to the Mac while a track was playing, which is what determines each row, but the
-widget has not yet been pointed at them end to end.
+Deezer was driven end to end through Opera with a debugging port, using the
+app's own `--cdp` diagnostic against a playing tab. Tidal and Bandcamp were
+verified by inspecting what their players expose to the Mac while a track was
+playing, which is what determines each row, but the widget has not yet been
+pointed at them end to end.
 
 GlassDeck has so far only been run on Apple silicon. Anything not listed has not
 been tested.
