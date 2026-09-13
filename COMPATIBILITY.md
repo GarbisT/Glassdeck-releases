@@ -6,18 +6,56 @@ music is coming out of. Here is the order, best first.
 
 ## The short answer
 
-### 1. A desktop music app — Apple Music, Spotify
+### 1. A desktop music app — Apple Music, Spotify, Swinsian, VOX
 
 These talk to GlassDeck directly. Nothing has to be visible, no tab has to be in
 front, and there is no setting to switch on beyond granting permission the first
 time.
 
-Only these two ship a Mac app another app can read. Tidal, Deezer, Amazon Music,
-Qobuz and SoundCloud are web players in a wrapper, so their desktop apps cannot
-be read at all and you want their websites instead.
+Of the streaming services, only Apple Music and Spotify ship a Mac app another
+app can read. Tidal, Deezer, Amazon Music, Qobuz and SoundCloud are web players
+in a wrapper, so their desktop apps cannot be read at all and you want their
+websites instead.
 
 **You get** everything: artwork, an exact playhead, scrubbing, skip, shuffle,
 repeat, and favourite on Apple Music.
+
+### 1b. Your own files — Swinsian, VOX, VLC, IINA
+
+Local players, in order of how well they answer.
+
+**Swinsian** is the best-supported source in the app. Title, artist, album, an
+exact playhead, scrubbing, the full transport, shuffle, and all three repeat
+modes, which is more than Spotify's own app manages. No star: Swinsian has no
+concept of a like, only a rating out of five, and pressing a star would
+overwrite whatever rating you had given the track.
+
+**VOX** gives title, artist, album, an exact playhead, scrubbing and the
+transport. Two limits, both in what VOX reports rather than what it can do.
+Repeat is shown as on or off rather than off, all and one: VOX numbers its three
+modes and names none of them, and neither of the two "on" values held a track in
+testing against a real queue. Both moved on to the next one, so there is nothing
+to justify showing repeat-one. Shuffle can be switched from the widget but never read,
+so the button toggles without ever lighting up.
+
+**VLC** is read *only when it is playing audio*, judged by the file extension.
+It is a video player as often as a music one, and without that rule starting a
+film would hand the widget over to it. You get the item name, an exact playhead,
+scrubbing and the transport. No shuffle, repeat or favourite: VLC's scripting
+offers none of them.
+
+**IINA** ships no scripting at all, so it is read the way a screen reader reads
+it: the title, both clocks, and a position slider that can be moved, which gives
+real scrubbing. The same audio-only rule applies. **The transport is the fragile
+part.** IINA's buttons carry no names, only identifiers generated from its
+interface file, so play, previous and next are found by their arrangement on
+screen. That survives moving and resizing the window. It will not survive IINA
+redesigning its controls, and if the row cannot be found the buttons grey out
+rather than press something unknown.
+
+Artwork for all four comes from the file itself rather than the player, so a
+tagged file shows its cover and an untagged one does not. An untagged file also
+shows its filename as the title, because that is all the player knows.
 
 ### 2. A browser, with one setting turned on — Chrome, Brave, Edge, Vivaldi, Safari
 
