@@ -15,7 +15,8 @@ time.
 Of the streaming services, only Apple Music and Spotify ship a Mac app another
 app can read. Tidal, Deezer, Amazon Music, Qobuz and SoundCloud are web players
 in a wrapper, so their desktop apps cannot be read at all and you want their
-websites instead.
+websites instead. The Tidal desktop app was checked directly: it is an Electron
+application and ships no scripting of any kind.
 
 **You get** everything: artwork, an exact playhead, scrubbing, skip, shuffle,
 repeat, and favourite on Apple Music.
@@ -115,7 +116,7 @@ pretend to support it.
 | **YouTube Music** — Chrome, Brave, Edge, Vivaldi | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
 | **YouTube Music** — Opera | Yes | Exact | Only with a port | Yes | Press only ⁵ | Off, all, one | No |
 | **YouTube Music** — Safari | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
-| **Tidal** — listen.tidal.com | Yes | Exact | Yes | Yes | No | No | No |
+| **Tidal** — tidal.com | Yes | Misleading ⁹ | Within the chunk ⁹ | Yes | No | No | No |
 | **Deezer** — deezer.com | Readable, not shown ⁶ | No | No | No | No | No | No |
 | **Bandcamp** — bandcamp.com | Browse pages only ⁷ | No | No | No | No | No | No |
 | **Anything else on the web** | Usually | Usually | Usually | Usually | No | No | No ⁸ |
@@ -142,6 +143,17 @@ that changes on its own.
 ⁷ Album pages announce nothing at all and are not picked up. Discover pages give
 a title and artist with no artwork.
 ⁸ Most sites announce what they are playing in a standard way, and those work.
+⁹ Tidal, driven end to end through Opera. The track, artist, album and artwork
+arrive, and play, pause, next and previous all work. The clock does not: Tidal
+streams in chunks of about thirty seconds, and the only playhead it exposes
+belongs to the chunk rather than to the song. So a four-minute track shows as
+half a minute, the bar fills and starts again, and dragging it moves you inside
+that chunk rather than through the song.
+
+It also blinks. Tidal clears what it announces between chunks, so the widget
+loses the track for a moment and finds it again: measured over 37 polls with
+music playing, 17 of them saw nothing at all. In practice the panel flickers
+between the song and an empty widget.
 Shuffle, repeat and favourite are always site-specific.
 
 ### Repeat-one in Spotify's app cannot be seen from outside it
@@ -310,10 +322,11 @@ the widget itself, with every control pressed and every setting put back
 afterwards.
 
 Deezer was driven end to end through Opera with a debugging port, using the
-app's own `--cdp` diagnostic against a playing tab. Tidal and Bandcamp were
-verified by inspecting what their players expose to the Mac while a track was
-playing, which is what determines each row, but the widget has not yet been
-pointed at them end to end.
+app's own `--cdp` diagnostic against a playing tab, as was Tidal, including its
+transport and the poll-by-poll count behind the note on blinking. Bandcamp was
+verified by inspecting what its player exposes to the Mac while a track was
+playing, which is what determines its row, but the widget has not yet been
+pointed at it end to end.
 
 GlassDeck has so far only been run on Apple silicon. Anything not listed has not
 been tested.
