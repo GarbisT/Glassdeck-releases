@@ -116,7 +116,7 @@ pretend to support it.
 | **YouTube Music** — Chrome, Brave, Edge, Vivaldi | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
 | **YouTube Music** — Opera | Yes | Exact | Only with a port | Yes | Press only ⁵ | Off, all, one | No |
 | **YouTube Music** — Safari | Yes | Exact | Yes | Yes | Press only ⁵ | Off, all, one | Yes |
-| **Tidal** — tidal.com | Yes | Exact | Yes | Yes | No ⁹ | No ⁹ | No ⁹ |
+| **Tidal** — tidal.com | Yes | Exact | Yes | Yes | Yes | Off, all, one | Yes ⁹ |
 | **Deezer** — deezer.com | Readable, not shown ⁶ | No | No | No | No | No | No |
 | **Bandcamp** — bandcamp.com | Browse pages only ⁷ | No | No | No | No | No | No |
 | **Anything else on the web** | Usually | Usually | Usually | Usually | No | No | No ⁸ |
@@ -146,10 +146,15 @@ a title and artist with no artwork.
 ⁹ Tidal, driven end to end through Opera. Track, artist, album, artwork, an
 exact playhead, scrubbing, play, pause, next and previous all work.
 
-Shuffle, repeat and the heart do not, and this is a gap in GlassDeck rather than
-in Tidal: Tidal's player bar labels all three properly and says whether each is
-on, so they could be supported the way Spotify's and YouTube Music's already
-are. Nobody has written that yet.
+Shuffle and repeat work too, both read and pressed, with repeat covering all
+three modes. Driven through the widget against a live tab.
+
+The heart is implemented and untested. Tidal shows the same "Add to My
+Collection" button on every row of every list, so the widget presses only the
+one sitting on the same line as the play button, which is the one belonging to
+the track you are hearing. The account used for testing was logged out, and a
+logged-out Tidal shows no heart in the player bar at all, so the star simply
+does not appear. With an account it should; nobody has watched it yet.
 
 **A caution about how this was tested.** The account was logged out, so every
 track was a thirty-second preview. The widget showed thirty-second tracks
