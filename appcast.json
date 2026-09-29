@@ -1,7 +1,7 @@
 {
-  "version": "1.5.1",
-  "build": "15",
+  "version": "1.5.2",
+  "build": "16",
   "url": "https://github.com/GarbisT/Glassdeck-releases/releases/latest",
-  "notes": "Album colours now match the album: black and white count, and the accent is the colour you would point at.",
+  "notes": "The slim bar's source icon stays put, long titles fade into the edges, and sliders resize the widget as you drag.",
   "minimumSystemVersion": "14.0"
 }
